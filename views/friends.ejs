@@ -1,0 +1,146 @@
+<%- include('partials/header', { title: 'Friends' }) %>
+<%- include('partials/navbar', { activePage: 'friends' }) %>
+
+<div class="container" style="padding-top: 36px; padding-bottom: 60px;">
+
+  <div class="page-header">
+    <h1>Friends</h1>
+    <p>Find readers to follow and see their reading activity in your feed.</p>
+  </div>
+
+  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 32px; align-items: start;">
+
+    <!-- ── Left: Your friends ─────────────────────────────── -->
+    <div>
+      <p class="section-label">Your friends (<%= friends ? friends.length : 0 %>)</p>
+
+      <% if (friends && friends.length > 0) { %>
+        <div class="stagger" style="display:flex; flex-direction:column; gap:10px;">
+          <% friends.forEach(function(friend) { %>
+            <div class="friend-card">
+              <div class="friend-avatar">
+                <%= friend.username.charAt(0).toUpperCase() %>
+              </div>
+              <div>
+                <div class="friend-name">
+                  <a href="/profile/<%= friend.username %>" style="transition:color 0.2s;" onmouseover="this.style.color='var(--accent)'" onmouseout="this.style.color=''">
+                    <%= friend.username %>
+                  </a>
+                </div>
+                <div class="friend-sub">
+                  <%= friend.currentlyReading && friend.currentlyReading.length > 0
+                    ? '📖 Reading ' + friend.currentlyReading.length + ' book' + (friend.currentlyReading.length > 1 ? 's' : '')
+                    : 'No active reads' %>
+                </div>
+              </div>
+              <div class="friend-actions">
+                <a href="/profile/<%= friend.username %>" class="btn btn-ghost btn-sm">View</a>
+                <form action="/friends/remove/<%= friend._id %>" method="POST">
+                  <button type="submit" class="btn btn-ghost btn-sm" style="color:var(--text-3);">✕</button>
+                </form>
+              </div>
+            </div>
+          <% }); %>
+        </div>
+
+      <% } else { %>
+        <div class="empty-state" style="padding:40px 0;">
+          <div class="empty-icon">👥</div>
+          <h3>No friends yet</h3>
+          <p>Search for someone by username to connect.</p>
+        </div>
+      <% } %>
+    </div>
+
+    <!-- ── Right: Find users ──────────────────────────────── -->
+    <div>
+      <p class="section-label">Find someone</p>
+
+      <!-- Search form -->
+      <form action="/friends/search" method="GET" class="mb-3">
+        <div style="display:flex; gap:8px;">
+          <input
+            class="form-input"
+            type="text"
+            name="q"
+            value="<%= typeof searchQuery !== 'undefined' ? searchQuery : '' %>"
+            placeholder="Search by username…"
+            autocomplete="off"
+          />
+          <button type="submit" class="btn btn-primary" style="flex-shrink:0;">Search</button>
+        </div>
+      </form>
+
+      <!-- Search results -->
+      <% if (typeof searchResults !== 'undefined' && searchResults.length > 0) { %>
+        <div class="stagger" style="display:flex; flex-direction:column; gap:10px;">
+          <% searchResults.forEach(function(u) { %>
+            <div class="friend-card">
+              <div class="friend-avatar">
+                <%= u.username.charAt(0).toUpperCase() %>
+              </div>
+              <div>
+                <div class="friend-name"><%= u.username %></div>
+                <div class="friend-sub">
+                  <%= u.favoriteBooks ? u.favoriteBooks.length : 0 %> favorites ·
+                  <%= u.friends ? u.friends.length : 0 %> friends
+                </div>
+              </div>
+              <div class="friend-actions">
+                <a href="/profile/<%= u.username %>" class="btn btn-ghost btn-sm">View</a>
+                <% const alreadyFriend = friends && friends.map(function(f){ return String(f._id); }).includes(String(u._id)); %>
+                <% if (!alreadyFriend && String(u._id) !== String(locals.currentUser)) { %>
+                  <form action="/friends/add/<%= u._id %>" method="POST">
+                    <button type="submit" class="btn btn-primary btn-sm">+ Add</button>
+                  </form>
+                <% } else if (alreadyFriend) { %>
+                  <span class="badge badge-reading" style="font-size:11px;">Friends ✓</span>
+                <% } %>
+              </div>
+            </div>
+          <% }); %>
+        </div>
+
+      <% } else if (typeof searchQuery !== 'undefined' && searchQuery !== '') { %>
+        <div class="empty-state" style="padding:30px 0;">
+          <div class="empty-icon">🔍</div>
+          <h3>No users found</h3>
+          <p>Try a different username.</p>
+        </div>
+
+      <% } else { %>
+        <!-- Suggested users (all users except self and existing friends) -->
+        <% if (typeof suggested !== 'undefined' && suggested.length > 0) { %>
+          <div>
+            <p class="text-muted text-sm mb-2">Suggested readers</p>
+            <div style="display:flex; flex-direction:column; gap:10px;" class="stagger">
+              <% suggested.forEach(function(u) { %>
+                <div class="friend-card">
+                  <div class="friend-avatar">
+                    <%= u.username.charAt(0).toUpperCase() %>
+                  </div>
+                  <div>
+                    <div class="friend-name"><%= u.username %></div>
+                    <div class="friend-sub">
+                      <%= u.favoriteBooks ? u.favoriteBooks.length : 0 %> favorites
+                    </div>
+                  </div>
+                  <div class="friend-actions">
+                    <a href="/profile/<%= u.username %>" class="btn btn-ghost btn-sm">View</a>
+                    <form action="/friends/add/<%= u._id %>" method="POST">
+                      <button type="submit" class="btn btn-primary btn-sm">+ Add</button>
+                    </form>
+                  </div>
+                </div>
+              <% }); %>
+            </div>
+          </div>
+        <% } %>
+      <% } %>
+    </div>
+
+  </div>
+</div>
+
+</body>
+</html>

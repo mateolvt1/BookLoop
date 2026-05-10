@@ -1,0 +1,72 @@
+<%- include('partials/header', { title: 'Join BookLoop' }) %>
+
+<div class="auth-wrap">
+  <div class="auth-bg-orb auth-bg-orb-1"></div>
+  <div class="auth-bg-orb auth-bg-orb-2"></div>
+
+  <div class="auth-card">
+    <div class="auth-logo">BookLoop</div>
+    <p class="auth-subtitle">Join a community of readers.</p>
+
+    <% if (locals.error) { %>
+      <div class="error-msg">⚠️ <%= error %></div>
+    <% } %>
+
+    <form action="/register" method="POST" autocomplete="on">
+
+      <div class="form-group">
+        <label class="form-label" for="username">Username</label>
+        <input
+          class="form-input"
+          type="text"
+          id="username"
+          name="username"
+          placeholder="your_username"
+          required
+          minlength="3"
+          maxlength="24"
+          autocomplete="username"
+        />
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="email">Email</label>
+        <input
+          class="form-input"
+          type="email"
+          id="email"
+          name="email"
+          placeholder="you@example.com"
+          required
+          autocomplete="email"
+        />
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="password">Password</label>
+        <input
+          class="form-input"
+          type="password"
+          id="password"
+          name="password"
+          placeholder="At least 8 characters"
+          required
+          minlength="8"
+          autocomplete="new-password"
+        />
+      </div>
+
+      <button type="submit" class="btn btn-primary w-full mt-2" style="justify-content:center; padding:12px;">
+        Create account
+      </button>
+
+    </form>
+
+    <div class="auth-switch">
+      Already have an account? <a href="/login">Sign in</a>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,523 @@
+<%- include('partials/header', { title: user.username + "'s Profile" }) %>
+<%- include('partials/navbar', { activePage: 'profile' }) %>
+
+<!-- ══════════════════════════════════════════════════════════
+     EMOJI WALLPAPER FRAME — visible as the background behind
+     the profile card. The card sits on top with a margin gap
+     so the emoji pattern peeks through as a border.
+════════════════════════════════════════════════════════════ -->
+<div class="profile-page-wrap">
+
+  <!-- Emoji wallpaper layer (the "border background") -->
+  <div class="profile-emoji-bg" aria-hidden="true"></div>
+
+  <!-- The actual profile card on top -->
+  <div class="profile-card-inner">
+  <div class="container" style="padding-bottom:80px;">
+
+  <!-- ── Banner ─────────────────────────────────────────────── -->
+  <div class="profile-banner-wrap" id="bannerWrap">
+
+    <% if (user.banner) { %>
+      <img class="banner-img" src="<%= user.banner %>" alt="Profile banner" id="bannerImg" />
+    <% } else { %>
+      <!-- Default gradient banner -->
+      <div id="bannerDefault" style="width:100%;height:100%;
+           background:linear-gradient(135deg,var(--bg-2) 0%,var(--bg-1) 40%,rgba(155,142,196,0.18) 100%);">
+      </div>
+    <% } %>
+
+    <div class="banner-overlay"></div>
+
+    <!-- Upload hint — only for own profile -->
+    <% if (locals.currentUser && String(locals.currentUser) === String(user._id)) { %>
+      <label class="banner-upload-hint" for="bannerInput" title="Change banner">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+             stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+          <polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/>
+        </svg>
+        Change banner
+      </label>
+      <input type="file" id="bannerInput" class="upload-input"
+             accept="image/*" onchange="uploadImage(this,'banner')" />
+    <% } %>
+  </div>
+
+  <!-- ── Profile info ───────────────────────────────────────── -->
+  <div class="profile-info" style="padding-top:24px;">
+
+    <!-- Avatar -->
+    <div class="profile-avatar-wrap">
+      <div class="profile-avatar-lg" id="avatarEl">
+        <% if (user.avatar) { %>
+          <img src="<%= user.avatar %>" alt="<%= user.username %>" id="avatarImg" />
+        <% } else { %>
+          <span id="avatarInitial"><%= user.username.charAt(0).toUpperCase() %></span>
+        <% } %>
+      </div>
+
+      <% if (locals.currentUser && String(locals.currentUser) === String(user._id)) { %>
+        <label class="avatar-upload-btn" for="avatarInput" title="Change photo">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+               stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
+            <circle cx="12" cy="13" r="4"/>
+          </svg>
+        </label>
+        <input type="file" id="avatarInput" class="upload-input"
+               accept="image/*" onchange="uploadImage(this,'avatar')" />
+      <% } %>
+    </div>
+
+    <!-- Username + friend button -->
+    <div class="flex items-c gap-3 mb-1" style="flex-wrap:wrap;">
+      <h1 class="profile-username"><%= user.username %></h1>
+      <% if (locals.currentUser && String(locals.currentUser) === String(user._id)) { %>
+        <span class="badge badge-gold">You</span>
+      <% } else if (locals.currentUser) { %>
+        <% var isFriend = user.friends && user.friends.map(String).includes(String(locals.currentUser)); %>
+        <form action="/friends/add/<%= user._id %>" method="POST" style="display:inline;">
+          <button type="submit" class="btn btn-secondary btn-sm">
+            <%= isFriend ? '✓ Friends' : '+ Add friend' %>
+          </button>
+        </form>
+      <% } %>
+    </div>
+
+    <% if (user.bio) { %>
+      <p class="profile-bio"><%= user.bio %></p>
+    <% } else { %>
+      <p class="profile-bio" style="opacity:0.35;font-style:italic;">No bio yet.</p>
+    <% } %>
+
+    <div class="profile-stats">
+      <div class="stat-item">
+        <div class="stat-num"><%= user.favoriteBooks ? user.favoriteBooks.length : 0 %></div>
+        <div class="stat-label">Favorites</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-num"><%= user.currentlyReading ? user.currentlyReading.length : 0 %></div>
+        <div class="stat-label">Reading</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-num"><%= user.readNext ? user.readNext.length : 0 %></div>
+        <div class="stat-label">Up next</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-num"><%= user.friends ? user.friends.length : 0 %></div>
+        <div class="stat-label">Friends</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════════════
+       SECTION 1 — Currently Reading
+  ════════════════════════════════════════════════════════ -->
+  <div class="divider mt-4"></div>
+  <div class="mt-3">
+    <p class="section-label">Currently reading</p>
+    <% if (user.currentlyReading && user.currentlyReading.length > 0) { %>
+      <div class="book-row">
+        <% user.currentlyReading.forEach(function(book) { %>
+          <div class="book-thumb" title="<%= book.title %>">
+            <% if (book.coverUrl) { %>
+              <img src="<%= book.coverUrl %>" alt="<%= book.title %>" loading="lazy" />
+            <% } else { %>
+              <div class="cover-ph">📚</div>
+            <% } %>
+            <div class="book-thumb-title"><%= book.title %></div>
+            <% if (locals.currentUser && String(locals.currentUser) === String(user._id)) { %>
+              <form action="/books/reading/<%= book._id %>?_method=DELETE" method="POST" style="margin-top:4px;">
+                <button class="btn btn-ghost btn-sm w-full" style="justify-content:center;font-size:10.5px;padding:4px 8px;">Remove</button>
+              </form>
+            <% } %>
+          </div>
+        <% }); %>
+      </div>
+    <% } else { %>
+      <div class="empty-state" style="padding:30px 0;">
+        <div class="empty-icon">📖</div>
+        <h3>Nothing here yet</h3>
+        <% if (locals.currentUser && String(locals.currentUser) === String(user._id)) { %>
+          <a href="/search" class="btn btn-secondary mt-2" style="display:inline-flex;">Find a book</a>
+        <% } %>
+      </div>
+    <% } %>
+  </div>
+
+  <!-- ══════════════════════════════════════════════════════
+       SECTION 2 — Favorites with reviews
+  ════════════════════════════════════════════════════════ -->
+  <div class="divider mt-4"></div>
+  <div class="mt-3">
+    <p class="section-label">Favorite books</p>
+    <% if (user.favoriteBooks && user.favoriteBooks.length > 0) { %>
+      <%
+        var reviewMap = {};
+        if (typeof userReviews !== 'undefined' && userReviews) {
+          userReviews.forEach(function(r) {
+            if (r.book) reviewMap[String(r.book._id || r.book)] = r;
+          });
+        }
+      %>
+      <div id="favList">
+        <% user.favoriteBooks.forEach(function(book, idx) {
+          var rev = reviewMap[String(book._id)];
+        %>
+          <div class="review-row <%= idx >= 3 ? 'extra-fav' : '' %>"
+               style="<%= idx >= 3 ? 'display:none;' : '' %>">
+            <div class="review-cover">
+              <% if (book.coverUrl) { %>
+                <img src="<%= book.coverUrl %>" alt="<%= book.title %>" loading="lazy" />
+              <% } else { %>
+                <div class="cover-ph">📚</div>
+              <% } %>
+            </div>
+            <div class="review-body">
+              <div class="review-book-title"><%= book.title %></div>
+              <div style="font-size:12px;color:var(--text-3);margin-bottom:6px;"><%= book.author || '' %></div>
+              <% if (book.avgRating && book.ratingCount) { %>
+                <div class="star-display mb-1">
+                  <% for(var s=1;s<=5;s++){ %><span class="star <%= s <= Math.round(book.avgRating) ? 'filled' : '' %>">★</span><% } %>
+                  <span class="rating-count"><%= book.avgRating.toFixed(1) %> (<%= book.ratingCount %>)</span>
+                </div>
+              <% } %>
+              <% if (rev && rev.text) { %>
+                <p class="review-text" id="rev-<%= book._id %>"><%= rev.text %></p>
+                <% if (rev.text.length > 140) { %>
+                  <button onclick="toggleReview('<%= book._id %>')"
+                          style="background:none;border:none;color:var(--accent);font-size:12px;cursor:pointer;padding:0;margin-top:4px;"
+                          id="revbtn-<%= book._id %>">Show more</button>
+                <% } %>
+              <% } else if (locals.currentUser && String(locals.currentUser) === String(user._id)) { %>
+                <p style="font-size:12.5px;color:var(--text-3);font-style:italic;">No review yet.</p>
+              <% } %>
+              <% if (locals.currentUser && String(locals.currentUser) === String(user._id)) { %>
+                <details style="margin-top:8px;">
+                  <summary style="font-size:12px;color:var(--accent);cursor:pointer;list-style:none;">
+                    <%= rev ? '✏️ Edit review' : '+ Add review' %>
+                  </summary>
+                  <form action="/books/review/<%= book._id %>" method="POST" style="margin-top:10px;">
+                    <div class="star-rating mb-2" data-book="<%= book._id %>">
+                      <% for(var s=1;s<=5;s++){ %>
+                        <span class="star <%= rev && rev.rating >= s ? 'filled' : '' %>"
+                              data-val="<%= s %>" onclick="pickStar(this)">★</span>
+                      <% } %>
+                      <input type="hidden" name="rating" id="rating-<%= book._id %>"
+                             value="<%= rev ? rev.rating : '' %>" />
+                    </div>
+                    <textarea class="form-input mb-2" name="text" rows="3"
+                              placeholder="What made this a favorite?"><%= rev ? rev.text : '' %></textarea>
+                    <button type="submit" class="btn btn-primary btn-sm">Save review</button>
+                  </form>
+                </details>
+                <form action="/books/favorite/<%= book._id %>?_method=DELETE" method="POST" style="margin-top:6px;display:inline;">
+                  <button class="btn btn-ghost btn-sm" style="font-size:11px;">Remove</button>
+                </form>
+              <% } %>
+            </div>
+          </div>
+        <% }); %>
+      </div>
+      <% if (user.favoriteBooks.length > 3) { %>
+        <button id="showMoreFav" onclick="toggleFavs()"
+                class="btn btn-ghost btn-sm mt-2" style="width:100%;justify-content:center;">
+          Show all <%= user.favoriteBooks.length %> favorites
+        </button>
+      <% } %>
+    <% } else { %>
+      <div class="empty-state" style="padding:30px 0;">
+        <div class="empty-icon">⭐</div><h3>No favorites yet</h3>
+        <% if (locals.currentUser && String(locals.currentUser) === String(user._id)) { %>
+          <a href="/search" class="btn btn-secondary mt-2" style="display:inline-flex;">Discover books</a>
+        <% } %>
+      </div>
+    <% } %>
+  </div>
+
+  <!-- ══════════════════════════════════════════════════════
+       SECTION 3 — All Reviews
+  ════════════════════════════════════════════════════════ -->
+  <div class="divider mt-4"></div>
+  <div class="mt-3">
+    <p class="section-label">Reviews</p>
+    <% if (typeof userReviews !== 'undefined' && userReviews && userReviews.filter(function(r){return r.text;}).length > 0) { %>
+      <div class="stagger">
+        <% userReviews.forEach(function(rev) {
+          if (!rev.text) return;
+        %>
+          <div class="review-row">
+            <div class="review-cover">
+              <% if (rev.book && rev.book.coverUrl) { %>
+                <img src="<%= rev.book.coverUrl %>" alt="" loading="lazy" />
+              <% } else { %>
+                <div class="cover-ph">📚</div>
+              <% } %>
+            </div>
+            <div class="review-body">
+              <div class="review-book-title"><%= rev.book ? rev.book.title : 'Unknown' %></div>
+              <div class="star-display mb-1">
+                <% for(var s=1;s<=5;s++){ %><span class="star <%= s <= rev.rating ? 'filled' : '' %>">★</span><% } %>
+              </div>
+              <p class="review-text"><%= rev.text %></p>
+              <div style="font-size:11.5px;color:var(--text-3);margin-top:6px;">
+                <%= rev.createdAt ? new Date(rev.createdAt).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}) : '' %>
+              </div>
+            </div>
+          </div>
+        <% }); %>
+      </div>
+    <% } else { %>
+      <div class="empty-state" style="padding:24px 0;">
+        <div class="empty-icon">✍️</div><h3>No reviews yet</h3>
+      </div>
+    <% } %>
+  </div>
+
+  <!-- ══════════════════════════════════════════════════════
+       SECTION 4 — Reading Next
+  ════════════════════════════════════════════════════════ -->
+  <div class="divider mt-4"></div>
+  <div class="mt-3">
+    <p class="section-label">Reading next</p>
+    <% if (user.readNext && user.readNext.length > 0) { %>
+      <div class="book-row">
+        <% user.readNext.forEach(function(book) { %>
+          <div class="book-thumb" title="<%= book.title %>">
+            <% if (book.coverUrl) { %>
+              <img src="<%= book.coverUrl %>" alt="<%= book.title %>" loading="lazy" />
+            <% } else { %>
+              <div class="cover-ph">📚</div>
+            <% } %>
+            <div class="book-thumb-title"><%= book.title %></div>
+            <% if (locals.currentUser && String(locals.currentUser) === String(user._id)) { %>
+              <form action="/books/readnext/<%= book._id %>?_method=DELETE" method="POST" style="margin-top:4px;">
+                <button class="btn btn-ghost btn-sm w-full" style="justify-content:center;font-size:10.5px;padding:4px 8px;">Remove</button>
+              </form>
+            <% } %>
+          </div>
+        <% }); %>
+      </div>
+    <% } else { %>
+      <div class="empty-state" style="padding:24px 0;">
+        <div class="empty-icon">🔖</div><h3>Nothing queued yet</h3>
+        <% if (locals.currentUser && String(locals.currentUser) === String(user._id)) { %>
+          <a href="/search" class="btn btn-secondary mt-2" style="display:inline-flex;">Find books</a>
+        <% } %>
+      </div>
+    <% } %>
+  </div>
+
+  <!-- ══════════════════════════════════════════════════════
+       SECTION 5 — Posts
+  ════════════════════════════════════════════════════════ -->
+  <div class="divider mt-4"></div>
+  <div class="mt-3">
+    <p class="section-label">Posts</p>
+    <% if (typeof userPosts !== 'undefined' && userPosts && userPosts.length > 0) { %>
+      <div class="stagger">
+        <% userPosts.forEach(function(post) { %>
+          <div class="post mb-3">
+            <div class="post-header">
+              <div class="post-avatar">
+                <% if (user.avatar) { %>
+                  <img src="<%= user.avatar %>" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:50%;" />
+                <% } else { %>
+                  <%= user.username.charAt(0).toUpperCase() %>
+                <% } %>
+              </div>
+              <div>
+                <div class="post-username"><%= user.username %></div>
+                <div class="post-time"><%= post.createdAt ? new Date(post.createdAt).toLocaleDateString('en-US',{month:'short',day:'numeric'}) : '' %></div>
+              </div>
+              <span class="post-type-badge <%= post.type==='finished'?'finished':'' %>">
+                <% if(post.type==='review')   { %>⭐ Review<% } %>
+                <% if(post.type==='update')   { %>📖 Update<% } %>
+                <% if(post.type==='finished') { %>🎉 Finished<% } %>
+              </span>
+            </div>
+            <% if (post.book) { %>
+              <div class="post-book-pill">
+                <% if(post.book.coverUrl){%><img src="<%= post.book.coverUrl %>" alt="" /><%}else{%><span style="width:28px;height:28px;border-radius:4px;background:var(--bg-2);display:flex;align-items:center;justify-content:center;">📚</span><%}%>
+                <%= post.book.title %>
+              </div>
+            <% } %>
+            <p class="post-content"><%= post.content %></p>
+          </div>
+        <% }); %>
+      </div>
+    <% } else { %>
+      <div class="empty-state" style="padding:24px 0;">
+        <div class="empty-icon">📝</div><h3>No posts yet</h3>
+        <% if (locals.currentUser && String(locals.currentUser) === String(user._id)) { %>
+          <a href="/feed" class="btn btn-secondary mt-2" style="display:inline-flex;">Share something</a>
+        <% } %>
+      </div>
+    <% } %>
+  </div>
+
+  <!-- ── Edit bio ───────────────────────────────────────────── -->
+  <% if (locals.currentUser && String(locals.currentUser) === String(user._id)) { %>
+    <div class="divider mt-4"></div>
+    <div class="card card-pad mt-3">
+      <p class="section-label">Edit bio</p>
+      <form action="/users/bio" method="POST">
+        <div class="form-group">
+          <textarea class="form-input" name="bio" rows="3"
+            placeholder="Tell the world what you're about…"><%= user.bio || '' %></textarea>
+        </div>
+        <button type="submit" class="btn btn-primary btn-sm">Save bio</button>
+      </form>
+    </div>
+  <% } %>
+
+</div><!-- /container -->
+
+<script>
+/* ── Image upload — base64 to MongoDB ─────────────────────── */
+function uploadImage(input, type) {
+  var file = input.files[0];
+  if (!file) return;
+  if (file.size > 3 * 1024 * 1024) {
+    showFeedback('Image must be under 3 MB', 'error');
+    return;
+  }
+
+  var reader = new FileReader();
+  reader.onload = function(e) {
+    var base64 = e.target.result;
+
+    // Optimistic UI preview
+    if (type === 'avatar') {
+      var av = document.getElementById('avatarEl');
+      var initial = document.getElementById('avatarInitial');
+      var existing = document.getElementById('avatarImg');
+      if (initial) initial.style.display = 'none';
+      if (existing) existing.remove();
+      var img = document.createElement('img');
+      img.src = base64;
+      img.style.cssText = 'width:100%;height:100%;object-fit:cover;border-radius:50%;';
+      av.appendChild(img);
+    } else {
+      var wrap = document.getElementById('bannerWrap');
+      var def  = document.getElementById('bannerDefault');
+      var existing = wrap.querySelector('.banner-img');
+      if (def) def.style.display = 'none';
+      if (existing) existing.remove();
+      var img = document.createElement('img');
+      img.src = base64;
+      img.className = 'banner-img';
+      wrap.insertBefore(img, wrap.firstChild);
+    }
+
+    // POST to server
+    fetch('/users/upload-image', {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body:    JSON.stringify({ type: type, data: base64 }),
+    })
+    .then(function(r) { return r.json(); })
+    .then(function(res) {
+      if (res.ok) showFeedback(type === 'avatar' ? '✓ Photo updated!' : '✓ Banner updated!', 'success');
+      else showFeedback('Upload failed — try a smaller image', 'error');
+    })
+    .catch(function() { showFeedback('Network error', 'error'); });
+  };
+  reader.readAsDataURL(file);
+}
+
+function showFeedback(msg, kind) {
+  var el = document.createElement('div');
+  el.className = 'upload-feedback ' + kind;
+  el.textContent = msg;
+  document.body.appendChild(el);
+  setTimeout(function() { el.remove(); }, 3000);
+}
+
+/* ── Review helpers ───────────────────────────────────────── */
+function toggleReview(id) {
+  var el  = document.getElementById('rev-' + id);
+  var btn = document.getElementById('revbtn-' + id);
+  if (!el || !btn) return;
+  el.classList.toggle('expanded');
+  btn.textContent = el.classList.contains('expanded') ? 'Show less' : 'Show more';
+}
+
+function toggleFavs() {
+  var extras = document.querySelectorAll('.extra-fav');
+  var btn    = document.getElementById('showMoreFav');
+  var hidden = extras[0] && extras[0].style.display === 'none';
+  extras.forEach(function(el) { el.style.display = hidden ? '' : 'none'; });
+  btn.textContent = hidden ? 'Show fewer' : 'Show all favorites';
+}
+
+function pickStar(el) {
+  var container = el.closest('.star-rating');
+  var val       = parseInt(el.getAttribute('data-val'), 10);
+  var bookId    = container.getAttribute('data-book');
+  container.querySelectorAll('.star').forEach(function(s, i) {
+    s.classList.toggle('filled', i < val);
+  });
+  var input = document.getElementById('rating-' + bookId);
+  if (input) input.value = val;
+}
+</script>
+
+  </div><!-- /profile-card-inner -->
+</div><!-- /profile-page-wrap -->
+
+<style>
+/* ── Profile page emoji frame ────────────────────────────── */
+.profile-page-wrap {
+  position: relative;
+  min-height: 100vh;
+  padding: 20px;
+}
+
+/* Emoji wallpaper — fills the page behind the card */
+.profile-emoji-bg {
+  position: fixed;
+  inset: 62px 0 0 0;
+  z-index: 0;
+  pointer-events: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Ctext y='28' x='16' font-size='22'%3E%F0%9F%93%9A%3C/text%3E%3Ctext y='28' x='72' font-size='18'%3E%E2%9C%A8%3C/text%3E%3Ctext y='68' x='44' font-size='20'%3E%F0%9F%8C%99%3C/text%3E%3Ctext y='68' x='92' font-size='16'%3E%F0%9F%93%96%3C/text%3E%3Ctext y='108' x='8' font-size='17'%3E%E2%9C%A8%3C/text%3E%3Ctext y='108' x='58' font-size='22'%3E%F0%9F%93%9A%3C/text%3E%3C/svg%3E");
+  background-repeat: repeat;
+  background-size: 120px 120px;
+  opacity: 0.065;
+  animation: emoji-drift 60s linear infinite;
+}
+[data-theme="light"] .profile-emoji-bg { opacity: 0.09; }
+
+@keyframes emoji-drift {
+  from { background-position: 0 0; }
+  to   { background-position: 120px 120px; }
+}
+
+/* Card sits on top — rounded corners reveal the emoji bg as a border */
+.profile-card-inner {
+  position: relative;
+  z-index: 1;
+  background-color: var(--bg);
+  border-radius: 24px;
+  border: 1px solid var(--border);
+  box-shadow: 0 0 0 1px var(--border), 0 8px 40px rgba(0,0,0,0.35);
+  overflow: hidden;
+  max-width: 960px;
+  margin: 0 auto;
+}
+
+/* Banner fills the card edge-to-edge */
+.profile-card-inner .profile-banner-wrap {
+  margin: 0;
+  border-radius: 0;
+}
+
+/* Remove any padding-top on container inside card */
+.profile-card-inner .container {
+  padding-top: 0;
+}
+</style>
+
+</body>
+</html>

@@ -1,0 +1,348 @@
+<%- include('partials/header', { title: 'Home' }) %>
+<%- include('partials/navbar', { activePage: 'home' }) %>
+
+<div class="container" style="padding-bottom:80px;">
+
+  <!-- ── Welcome ────────────────────────────────────────────── -->
+  <div class="home-hero">
+    <h1>Good <%= new Date().getHours() < 12 ? 'morning' : new Date().getHours() < 18 ? 'afternoon' : 'evening' %>,
+      <em class="serif-italic" style="color:var(--accent);">
+        <%= locals.sessionUser ? locals.sessionUser.username : 'reader' %>
+      </em> 👋
+    </h1>
+    <p>Here's what the reading world is talking about this week.</p>
+  </div>
+
+  <!-- ══════════════════════════════════════════════════════
+       NYT BESTSELLERS — THIS WEEK
+  ════════════════════════════════════════════════════════ -->
+  <div class="mb-4">
+    <div class="flex items-c justify-b mb-3">
+      <div>
+        <p class="section-label" style="margin-bottom:2px;">
+          🏆 NYT Bestsellers
+          <span class="nyt-badge" style="margin-left:8px;">Bestseller</span>
+        </p>
+        <p class="text-muted text-sm">Updated weekly · <span id="nytListName">loading…</span></p>
+      </div>
+      <div style="display:flex;gap:8px;align-items:center;">
+        <select id="nytCategory" class="compose-type-select" onchange="loadNYT(this.value)">
+          <option value="hardcover-fiction">Fiction</option>
+          <option value="hardcover-nonfiction">Nonfiction</option>
+          <option value="paperback-nonfiction">Paperback Nonfiction</option>
+          <option value="young-adult-hardcover">Young Adult</option>
+          <option value="series-books">Series</option>
+          <option value="advice-how-to-and-miscellaneous">Self Help</option>
+          <option value="graphic-books-and-manga">Graphic & Manga</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Skeleton while loading -->
+    <div id="nytBooks" class="book-strip">
+      <% for(var i=0;i<10;i++){ %>
+        <div class="book-card" style="flex:0 0 130px;opacity:0.4;">
+          <div class="book-cover"><div class="book-cover-placeholder">📚</div></div>
+          <div class="book-meta">
+            <div style="height:12px;background:var(--bg-2);border-radius:4px;margin-bottom:6px;"></div>
+            <div style="height:10px;background:var(--bg-2);border-radius:4px;width:70%;"></div>
+          </div>
+        </div>
+      <% } %>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════════════
+       TRENDING BY GENRE — powered by NYT lists
+  ════════════════════════════════════════════════════════ -->
+  <div class="mb-4">
+    <div class="flex items-c justify-b mb-3">
+      <div>
+        <p class="section-label" style="margin-bottom:2px;">🔥 Trending by genre</p>
+        <p class="text-muted text-sm">
+          <span class="nyt-badge" style="vertical-align:middle;margin-right:6px;">Bestseller</span>
+          Live NYT lists &middot; <span id="genreListName">pick a genre</span>
+        </p>
+      </div>
+    </div>
+    <!-- Genre pills — NYT-backed where available, Open Library fallback for rest -->
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:20px;">
+      <button class="genre-pill active" onclick="loadGenre(this,'fiction')">Fiction</button>
+      <button class="genre-pill" onclick="loadGenre(this,'nonfiction')">Nonfiction</button>
+      <button class="genre-pill" onclick="loadGenre(this,'sci-fi')">Sci-Fi</button>
+      <button class="genre-pill" onclick="loadGenre(this,'fantasy')">Fantasy</button>
+      <button class="genre-pill" onclick="loadGenre(this,'mystery')">Mystery</button>
+      <button class="genre-pill" onclick="loadGenre(this,'romance')">Romance</button>
+      <button class="genre-pill" onclick="loadGenre(this,'horror')">Horror</button>
+      <button class="genre-pill" onclick="loadGenre(this,'young-adult')">Young Adult</button>
+      <button class="genre-pill" onclick="loadGenre(this,'self-help')">Self-Help</button>
+      <button class="genre-pill" onclick="loadGenre(this,'biography')">Biography</button>
+      <button class="genre-pill" onclick="loadGenre(this,'history')">History</button>
+      <button class="genre-pill" onclick="loadGenre(this,'graphic-manga')">Graphic / Manga</button>
+    </div>
+    <div id="genreBooks" class="book-strip">
+      <div style="color:var(--text-3);font-size:13px;padding:10px 0;">Loading…</div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════════════
+       UPCOMING RELEASES — live from Google Books
+  ════════════════════════════════════════════════════════ -->
+  <div class="mb-4">
+    <div class="flex items-c justify-b mb-3">
+      <div>
+        <p class="section-label" style="margin-bottom:2px;">📅 New &amp; upcoming releases</p>
+        <p class="text-muted text-sm">
+          <span style="font-size:10.5px;font-weight:600;padding:3px 9px;border-radius:99px;background:rgba(66,133,244,0.12);color:#4a90d9;border:1px solid rgba(66,133,244,0.2);">via Google Books</span>
+          &nbsp;Updated every 6 hours
+        </p>
+      </div>
+    </div>
+    <!-- Book strip filled by JS -->
+    <div id="upcomingBooks" class="book-strip">
+      <div style="color:var(--text-3);font-size:13px;padding:16px 0;display:flex;align-items:center;gap:8px;">
+        <span style="display:inline-block;width:14px;height:14px;border:2px solid var(--accent);border-top-color:transparent;border-radius:50%;animation:spin 0.7s linear infinite;"></span>
+        Loading new releases…
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════════════
+       YOUR SHELF AT A GLANCE
+  ════════════════════════════════════════════════════════ -->
+  <% if (locals.sessionUser) { %>
+    <div class="mb-4">
+      <p class="section-label">Your shelf at a glance</p>
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px;" class="stagger">
+        <a href="/profile/<%= locals.sessionUser.username %>" class="card card-pad" style="text-decoration:none;">
+          <div style="font-size:1.8rem;margin-bottom:8px;">📖</div>
+          <div style="font-family:'DM Serif Display',serif;font-size:1.5rem;color:var(--accent);"><%= locals.sessionUser.currentlyReading ? locals.sessionUser.currentlyReading.length : 0 %></div>
+          <div style="font-size:12px;color:var(--text-3);text-transform:uppercase;letter-spacing:0.06em;">Currently reading</div>
+        </a>
+        <a href="/profile/<%= locals.sessionUser.username %>" class="card card-pad" style="text-decoration:none;">
+          <div style="font-size:1.8rem;margin-bottom:8px;">⭐</div>
+          <div style="font-family:'DM Serif Display',serif;font-size:1.5rem;color:var(--accent);"><%= locals.sessionUser.favoriteBooks ? locals.sessionUser.favoriteBooks.length : 0 %></div>
+          <div style="font-size:12px;color:var(--text-3);text-transform:uppercase;letter-spacing:0.06em;">Favorites</div>
+        </a>
+        <a href="/profile/<%= locals.sessionUser.username %>" class="card card-pad" style="text-decoration:none;">
+          <div style="font-size:1.8rem;margin-bottom:8px;">🔖</div>
+          <div style="font-family:'DM Serif Display',serif;font-size:1.5rem;color:var(--accent);"><%= locals.sessionUser.readNext ? locals.sessionUser.readNext.length : 0 %></div>
+          <div style="font-size:12px;color:var(--text-3);text-transform:uppercase;letter-spacing:0.06em;">Reading next</div>
+        </a>
+        <a href="/friends" class="card card-pad" style="text-decoration:none;">
+          <div style="font-size:1.8rem;margin-bottom:8px;">👥</div>
+          <div style="font-family:'DM Serif Display',serif;font-size:1.5rem;color:var(--accent);"><%= locals.sessionUser.friends ? locals.sessionUser.friends.length : 0 %></div>
+          <div style="font-size:12px;color:var(--text-3);text-transform:uppercase;letter-spacing:0.06em;">Friends</div>
+        </a>
+      </div>
+    </div>
+  <% } %>
+
+</div>
+
+<script>
+/* ── Shared helpers ──────────────────────────────────────── */
+function escHtml(str) {
+  return String(str||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function makeBookCard(book, rank) {
+  var cover = book.coverUrl
+    ? '<img src="'+book.coverUrl+'" alt="'+escHtml(book.title)+'" loading="lazy" style="width:100%;height:100%;object-fit:cover;" />'
+    : '<div class="book-cover-placeholder">📚</div>';
+
+  var rankBubble = rank ? '<div class="rank-bubble">'+rank+'</div>' : '';
+
+  var sourceBadge = book.isNYT
+    ? '<div style="padding:4px 10px 0;"><span class="nyt-badge">Bestseller</span></div>'
+    : book.isGoogle
+      ? '<div style="padding:4px 10px 0;"><span style="font-size:9.5px;font-weight:600;padding:2px 7px;border-radius:99px;background:rgba(66,133,244,0.12);color:#4a90d9;">Google Books</span></div>'
+      : '';
+
+  var cardUrl = '/search/query?q=' + encodeURIComponent(book.title);
+  return '<div class="book-card home-book-card" style="flex:0 0 130px;cursor:pointer;" data-url="' + escHtml(cardUrl) + '">' +
+    '<div class="book-cover">' + rankBubble + cover + '</div>' +
+    sourceBadge +
+    '<div class="book-meta">' +
+      '<div class="book-title">' + escHtml(book.title) + '</div>' +
+      '<div class="book-author">' + escHtml(book.author||'') + '</div>' +
+    '</div></div>';
+}
+
+function _nytError(msg, soft) {
+  return '<div style="display:flex;align-items:center;gap:10px;padding:14px 16px;'+
+    'background:var(--bg-glass);border:1px solid var(--border);border-radius:12px;'+
+    'font-size:13px;color:'+(soft?'var(--accent)':'var(--text-2)')+';">'+msg+'</div>';
+}
+
+function _spinner(msg) {
+  return '<div style="color:var(--text-3);font-size:13px;padding:16px 0;display:flex;align-items:center;gap:8px;">'+
+    '<span style="display:inline-block;width:14px;height:14px;border:2px solid var(--accent);border-top-color:transparent;border-radius:50%;animation:spin 0.7s linear infinite;"></span>'+
+    (msg||'Loading…')+'</div>';
+}
+
+/* ── NYT Bestsellers strip ───────────────────────────────── */
+var nytClientCache = {};
+var nytDebounceTimer = null;
+
+function loadNYT(listName) {
+  clearTimeout(nytDebounceTimer);
+  nytDebounceTimer = setTimeout(function() { _doLoadNYT(listName); }, 400);
+}
+
+function _doLoadNYT(listName) {
+  var container  = document.getElementById('nytBooks');
+  var listNameEl = document.getElementById('nytListName');
+
+  if (nytClientCache[listName]) {
+    _renderNYT(nytClientCache[listName], listName, listNameEl, container);
+    return;
+  }
+
+  container.innerHTML = _spinner('Loading NYT Bestsellers…');
+
+  fetch('/home/nyt-bestsellers?list='+encodeURIComponent(listName))
+    .then(function(r){ return r.json(); })
+    .then(function(data) {
+      if (!data || data.error) {
+        var isRL = data && data.error && data.error.indexOf('Rate limit') !== -1;
+        container.innerHTML = isRL
+          ? _nytError('⏱ Rate limit hit — wait a moment and try again.', true)
+          : _nytError('⚠️ '+(data&&data.error?data.error:'Could not load.'));
+        return;
+      }
+      nytClientCache[listName] = data;
+      _renderNYT(data, listName, listNameEl, container);
+    })
+    .catch(function() { container.innerHTML = _nytError('Network error. Try again.'); });
+}
+
+function _renderNYT(data, listName, listNameEl, container) {
+  if (listNameEl) listNameEl.textContent = (data.listDisplayName||listName) + (data.stale?' (cached)':'');
+  container.innerHTML = '';
+  (data.books||[]).forEach(function(book,i) {
+    container.insertAdjacentHTML('beforeend', makeBookCard({ title:book.title, author:book.author, coverUrl:book.coverUrl, isNYT:true }, i+1));
+  });
+}
+
+/* ── Genre strip — NYT proxy with OL fallback ────────────── */
+var genreClientCache = {};
+var genreDebounceTimer = null;
+
+function loadGenre(btn, genre) {
+  document.querySelectorAll('.genre-pill').forEach(function(p){ p.classList.remove('active'); });
+  btn.classList.add('active');
+  clearTimeout(genreDebounceTimer);
+  genreDebounceTimer = setTimeout(function() { _doLoadGenre(genre); }, 350);
+}
+
+function _doLoadGenre(genre) {
+  var container  = document.getElementById('genreBooks');
+  var listNameEl = document.getElementById('genreListName');
+
+  if (genreClientCache[genre]) {
+    _renderGenre(genreClientCache[genre], listNameEl, container);
+    return;
+  }
+
+  container.innerHTML = _spinner('Loading '+genre+'…');
+
+  fetch('/home/genre-books?genre='+encodeURIComponent(genre))
+    .then(function(r){ return r.json(); })
+    .then(function(data) {
+      if (!data || data.error) {
+        container.innerHTML = _nytError('⚠️ '+(data&&data.error?data.error:'Could not load genre.'));
+        return;
+      }
+      genreClientCache[genre] = data;
+      _renderGenre(data, listNameEl, container);
+    })
+    .catch(function() { container.innerHTML = _nytError('Network error.'); });
+}
+
+function _renderGenre(data, listNameEl, container) {
+  // Always clear spinner/previous content first
+  container.innerHTML = '';
+
+  if (!data.books || data.books.length === 0) {
+    container.innerHTML = _nytError('No books found for this genre right now.', true);
+    return;
+  }
+
+  if (listNameEl) {
+    var src = data.source === 'nyt' ? ' · NYT' : ' · Open Library';
+    listNameEl.textContent = (data.listDisplayName||'') + src;
+  }
+
+  (data.books||[]).forEach(function(book, i) {
+    container.insertAdjacentHTML('beforeend', makeBookCard({
+      title:    book.title,
+      author:   book.author,
+      coverUrl: book.coverUrl,
+      isNYT:    data.source === 'nyt',
+    }, data.source === 'nyt' ? i+1 : null));
+  });
+}
+
+/* ── Upcoming Releases — Google Books ────────────────────── */
+function loadUpcoming() {
+  var container = document.getElementById('upcomingBooks');
+  if (!container) return;
+
+  container.innerHTML = _spinner('Loading new releases…');
+
+  fetch('/home/upcoming')
+    .then(function(r){ return r.json(); })
+    .then(function(data) {
+      // Always clear spinner first
+      container.innerHTML = '';
+
+      if (!data) {
+        container.innerHTML = _nytError('No response from server.');
+        return;
+      }
+      if (!data.books || data.books.length === 0) {
+        // Show friendly message rather than empty/stuck spinner
+        container.innerHTML = _nytError(
+          data.error
+            ? '⚠️ ' + data.error
+            : '📅 New releases are loading — check back in a moment.',
+          true
+        );
+        return;
+      }
+      var isGoogle = data.source === 'google';
+      data.books.forEach(function(book) {
+        container.insertAdjacentHTML('beforeend', makeBookCard({
+          title:    book.title,
+          author:   book.author,
+          coverUrl: book.coverUrl,
+          isGoogle: isGoogle,
+        }));
+      });
+    })
+    .catch(function(err) {
+      container.innerHTML = _nytError('Network error loading upcoming releases. Try refreshing.');
+    });
+}
+
+/* ── Delegated click handler for dynamically inserted book cards ── */
+document.addEventListener('click', function(e) {
+  var card = e.target.closest('.home-book-card');
+  if (card) {
+    var url = card.getAttribute('data-url');
+    if (url) window.location.href = url;
+  }
+});
+
+/* ── Init ────────────────────────────────────────────────── */
+loadNYT('hardcover-fiction');
+setTimeout(function() { _doLoadGenre('fiction'); }, 100);
+setTimeout(function() { loadUpcoming(); }, 200);
+</script>
+</body>
+</html>
+
+<style>@keyframes spin{to{transform:rotate(360deg);}}</style>
+</body>
+</html>

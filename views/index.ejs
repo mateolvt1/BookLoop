@@ -1,0 +1,262 @@
+<%- include('partials/header', { title: 'Welcome' }) %>
+<%- include('partials/navbar') %>
+
+<!-- ══════════════════════════════════════════════════════════
+     HERO
+════════════════════════════════════════════════════════════ -->
+<section class="hero">
+  <div class="hero-bg"></div>
+
+  <div class="container" style="width:100%; display:flex; align-items:center;">
+
+    <div class="hero-content">
+      <p class="hero-eyebrow">Your reading, social</p>
+      <h1>Books worth<br/><em>sharing.</em></h1>
+      <p class="hero-desc">
+        Track what you're reading, discover what your friends love,
+        and share the moments that move you — all in one quiet corner of the internet.
+      </p>
+      <div class="hero-ctas">
+        <a href="/register" class="btn btn-primary" style="font-size:15px;padding:12px 28px;">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>
+          Start for free
+        </a>
+        <a href="/login" class="btn btn-secondary" style="font-size:15px;padding:12px 28px;">Sign in</a>
+      </div>
+      <div class="flex gap-2 mt-4" style="flex-wrap:wrap;">
+        <span class="badge badge-purple">📚 Track books</span>
+        <span class="badge badge-gold">✨ Social feed</span>
+        <span class="badge badge-reading">🔍 Discover</span>
+        <span class="badge badge-purple">⭐ Rate & review</span>
+      </div>
+    </div>
+
+    <!-- Live book covers from Open Library -->
+    <div class="hero-books-panel" id="heroBooks" aria-hidden="true">
+      <!-- 9 slots — JS fills them in -->
+      <% for(var i=0;i<9;i++) { %>
+        <div class="hero-book-item" style="--dur:<%= 6+i*0.4 %>s;--delay:<%= (i*0.3)%1.8 %>s;">
+          <div class="loading-ph">📚</div>
+        </div>
+      <% } %>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════
+     FEATURE 1 — Emoji reactions on reading posts
+════════════════════════════════════════════════════════════ -->
+<section class="feature-section" id="feat1">
+  <div class="container">
+    <div class="feature-inner">
+      <div class="feature-text">
+        <span class="feature-tag">Social feed</span>
+        <h2>React to what your<br/><em class="serif-italic">friends are reading</em></h2>
+        <p>
+          When a friend posts a reading update, drop an emoji reaction —
+          a 🔥 for a page-turner, 😭 for the tearjerker, 🤯 for a mind-bender.
+          It's the fastest way to say <em>"I've been there."</em>
+        </p>
+      </div>
+      <div class="feature-visual">
+        <div class="mock-ui">
+          <!-- Mock post -->
+          <div class="mock-post">
+            <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
+              <div class="mock-avatar">S</div>
+              <div>
+                <div style="font-size:13.5px;font-weight:500;">sarah_reads</div>
+                <div style="font-size:11.5px;color:var(--text-3);">2 min ago · 📖 Update</div>
+              </div>
+            </div>
+            <p style="font-size:13.5px;color:var(--text-2);line-height:1.65;margin-bottom:10px;">
+              Just hit the halfway point of <strong>The Name of the Wind</strong> and I literally can't put it down. Kvothe's story is unreal 😭
+            </p>
+            <div class="post-book-pill" style="margin-bottom:12px;">
+              <div style="width:28px;height:28px;border-radius:4px;background:var(--bg-2);display:flex;align-items:center;justify-content:center;font-size:13px;">📚</div>
+              The Name of the Wind
+            </div>
+            <div class="mock-reactions">
+              <span class="mock-reaction">🔥 12</span>
+              <span class="mock-reaction">😭 8</span>
+              <span class="mock-reaction">🤯 5</span>
+              <span class="mock-reaction">❤️ 21</span>
+              <span class="mock-reaction" style="border-style:dashed;color:var(--text-3);">+ React</span>
+            </div>
+          </div>
+          <!-- Second mini post -->
+          <div class="mock-post" style="opacity:0.6;">
+            <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
+              <div class="mock-avatar" style="background:linear-gradient(135deg,#c9a96e,#9b8ec4);">M</div>
+              <div style="font-size:13px;font-weight:500;">marcus_b</div>
+              <span style="margin-left:auto;font-size:11px;color:var(--text-3);">🎉 Finished</span>
+            </div>
+            <p style="font-size:13px;color:var(--text-2);">Project Hail Mary — best sci-fi I've read in years. 10/10</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════
+     FEATURE 2 — Profile page preview
+════════════════════════════════════════════════════════════ -->
+<section class="feature-section" id="feat2">
+  <div class="container">
+    <div class="feature-inner">
+      <div class="feature-text">
+        <span class="feature-tag">Your profile</span>
+        <h2>Your reading life,<br/><em class="serif-italic">beautifully organized</em></h2>
+        <p>
+          Your profile shows everything at a glance — what you're reading now,
+          your all-time favorites with star ratings and personal reviews,
+          and your "reading next" list so friends know what's coming.
+        </p>
+      </div>
+      <div class="feature-visual">
+        <div class="mock-profile-preview">
+          <div class="mock-profile-header">
+            <div class="mock-profile-av">J</div>
+          </div>
+          <div class="mock-profile-body">
+            <div style="font-family:'DM Serif Display',serif;font-size:1.1rem;margin-bottom:2px;">jamie_reads</div>
+            <div style="font-size:12px;color:var(--text-3);margin-bottom:16px;">avid reader · 42 books this year</div>
+
+            <div style="font-size:10.5px;color:var(--text-3);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:8px;">Currently reading</div>
+            <div class="mock-book-row">
+              <div class="mock-book-mini" style="background:linear-gradient(135deg,#2d2440,#1a1926);"></div>
+              <div class="mock-book-mini" style="background:linear-gradient(135deg,#2a3040,#1c2230);"></div>
+            </div>
+
+            <div style="font-size:10.5px;color:var(--text-3);text-transform:uppercase;letter-spacing:0.1em;margin:14px 0 8px;">Favorites</div>
+            <div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border);">
+              <div class="mock-book-mini" style="width:36px;height:54px;border-radius:4px;background:linear-gradient(135deg,#3a2a1a,#261c10);"></div>
+              <div>
+                <div style="font-size:12.5px;font-weight:600;font-family:'Lora',serif;">Dune</div>
+                <div style="display:flex;gap:2px;margin-top:3px;">
+                  <span style="color:var(--accent);font-size:11px;">★★★★★</span>
+                </div>
+                <div style="font-size:11.5px;color:var(--text-3);margin-top:3px);">"A masterpiece of world-building…"</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════
+     FEATURE 3 — Discover & rate
+════════════════════════════════════════════════════════════ -->
+<section class="feature-section" id="feat3">
+  <div class="container">
+    <div class="feature-inner">
+      <div class="feature-text">
+        <span class="feature-tag">Discover</span>
+        <h2>Search millions<br/>of <em class="serif-italic">titles instantly</em></h2>
+        <p>
+          Powered by Open Library, search any book and see its global
+          community rating — then add it to your shelf, favorites, or
+          reading-next list in one tap.
+        </p>
+      </div>
+      <div class="feature-visual">
+        <div class="mock-ui">
+          <div style="background:var(--bg-1);border:1px solid var(--accent);border-radius:99px;padding:10px 18px;font-size:14px;color:var(--text-3);margin-bottom:16px;display:flex;align-items:center;gap:8px;">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            The Name of the Wind
+          </div>
+          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;">
+            <% [
+              {bg:'linear-gradient(135deg,#2d2440,#1a1926)', stars:5},
+              {bg:'linear-gradient(135deg,#2a3040,#1c2230)', stars:4},
+              {bg:'linear-gradient(135deg,#3a2a1a,#261c10)', stars:5}
+            ].forEach(function(b){ %>
+              <div style="border-radius:10px;overflow:hidden;border:1px solid var(--border);">
+                <div style="aspect-ratio:2/3;background:<%= b.bg %>;"></div>
+                <div style="padding:8px;background:var(--bg-glass);">
+                  <div style="font-size:10.5px;color:var(--accent);">
+                    <% for(var s=0;s<5;s++){ %><%= s < b.stars ? '★' : '☆' %><% } %>
+                  </div>
+                  <div style="display:flex;gap:4px;margin-top:6px;">
+                    <div style="flex:1;height:22px;background:var(--accent);border-radius:5px;font-size:9px;display:flex;align-items:center;justify-content:center;color:var(--bg);font-weight:600;">+ Reading</div>
+                  </div>
+                </div>
+              </div>
+            <% }); %>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════
+     FOOTER / CTA
+════════════════════════════════════════════════════════════ -->
+<section style="padding:80px 0;text-align:center;border-top:1px solid var(--border);">
+  <div class="container">
+    <h2 style="font-size:2.2rem;margin-bottom:12px;">Ready to start reading <em class="serif-italic">together?</em></h2>
+    <p style="color:var(--text-2);font-size:15px;margin-bottom:32px;">Free forever. No ads. Just books.</p>
+    <a href="/register" class="btn btn-primary" style="font-size:16px;padding:14px 36px;">
+      Create your shelf
+    </a>
+  </div>
+</section>
+
+<footer style="border-top:1px solid var(--border);padding:24px 0;text-align:center;">
+  <div class="container">
+    <p class="text-muted text-sm">BookLoop &mdash; made with 📖 &amp; ☕</p>
+  </div>
+</footer>
+
+<script>
+// ── Fetch live book covers from Open Library ──────────────────
+(function() {
+  // 9 popular Open Library ISBNs
+  var isbns = [
+    '9780441013593', // Dune
+    '9780547928227', // The Hobbit
+    '9780743273565', // The Great Gatsby
+    '9780385490818', // The Handmaid's Tale
+    '9780062316097', // The Alchemist
+    '9780756404741', // The Name of the Wind
+    '9780593099322', // Project Hail Mary
+    '9781250301697', // The Seven Husbands
+    '9780525559474', // The Midnight Library
+  ];
+  var slots = document.querySelectorAll('#heroBooks .hero-book-item');
+  isbns.forEach(function(isbn, i) {
+    if (!slots[i]) return;
+    var img = new Image();
+    img.onload = function() {
+      slots[i].innerHTML = '';
+      slots[i].appendChild(img);
+    };
+    img.onerror = function() { /* keep placeholder */ };
+    img.src = 'https://covers.openlibrary.org/b/isbn/' + isbn + '-M.jpg';
+    img.alt = 'book cover';
+    img.style.cssText = 'width:100%;height:100%;object-fit:cover;display:block;border-radius:10px;';
+  });
+})();
+
+// ── Intersection observer for feature sections ────────────────
+(function() {
+  var sections = document.querySelectorAll('.feature-section');
+  if (!sections.length) return;
+  var obs = new IntersectionObserver(function(entries) {
+    entries.forEach(function(e) {
+      if (e.isIntersecting) {
+        e.target.classList.add('visible');
+        obs.unobserve(e.target);
+      }
+    });
+  }, { threshold: 0.15 });
+  sections.forEach(function(s) { obs.observe(s); });
+})();
+</script>
+
+</body>
+</html>

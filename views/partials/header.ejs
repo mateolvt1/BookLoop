@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title><%= typeof title !== 'undefined' ? title + ' · BookLoop' : 'BookLoop' %></title>
+  <meta name="description" content="BookLoop — your social reading companion" />
+  <link rel="stylesheet" href="/css/style.css" />
+  <link rel="stylesheet" href="/css/additions.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📖</text></svg>" />
+  <script>
+    (function() {
+      var t = localStorage.getItem('bl-theme') || 'dark';
+      document.documentElement.setAttribute('data-theme', t);
+    })();
+  </script>
+</head>
+<body class="page-enter">
+
+<!-- Emoji wallpaper side borders -->
+<div class="emoji-border emoji-border-left"  aria-hidden="true"></div>
+<div class="emoji-border emoji-border-right" aria-hidden="true"></div>

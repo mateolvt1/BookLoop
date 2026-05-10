@@ -1,0 +1,168 @@
+<%- include('partials/header', { title: 'Feed' }) %>
+<%- include('partials/navbar', { activePage: 'feed' }) %>
+
+<div class="container" style="padding-top: 36px; padding-bottom: 60px;">
+
+  <div style="display: grid; grid-template-columns: 1fr 320px; gap: 28px; align-items: start;">
+
+    <!-- ── Left: Main feed ─────────────────────────────────── -->
+    <div>
+
+      <!-- Compose box -->
+      <div class="compose-box">
+        <form action="/feed" method="POST">
+          <div class="compose-header">
+            <div class="post-avatar" aria-hidden="true">
+              <%= locals.sessionUser ? locals.sessionUser.username.charAt(0).toUpperCase() : '?' %>
+            </div>
+            <div class="compose-input-wrap">
+              <textarea
+                class="compose-input"
+                name="content"
+                placeholder="What are you reading? Share a thought…"
+                required
+                maxlength="500"
+              ></textarea>
+            </div>
+          </div>
+          <div class="compose-footer">
+            <select class="compose-type-select" name="type">
+              <option value="update">📝 Reading update</option>
+              <option value="review">⭐ Review</option>
+              <option value="finished">🎉 Just finished</option>
+            </select>
+            <button type="submit" class="btn btn-primary btn-sm">Share</button>
+          </div>
+        </form>
+      </div>
+
+      <!-- Posts -->
+      <% if (posts && posts.length > 0) { %>
+        <div class="stagger" id="posts-list">
+          <% posts.forEach(function(post) { %>
+            <div class="post mb-3">
+
+              <div class="post-header">
+                <!-- Avatar initial -->
+                <div class="post-avatar">
+                  <%= post.user && post.user.username ? post.user.username.charAt(0).toUpperCase() : '?' %>
+                </div>
+
+                <div>
+                  <a href="/profile/<%= post.user ? post.user.username : '' %>" class="post-username" style="transition: color 0.2s;">
+                    <%= post.user ? post.user.username : 'Unknown' %>
+                  </a>
+                  <div class="post-time"><%= post.createdAt ? new Date(post.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : '' %></div>
+                </div>
+
+                <span class="post-type-badge <%= post.type === 'finished' ? 'finished' : '' %>">
+                  <% if (post.type === 'review')   { %>⭐ Review<% } %>
+                  <% if (post.type === 'update')   { %>📖 Update<% } %>
+                  <% if (post.type === 'finished') { %>🎉 Finished<% } %>
+                </span>
+              </div>
+
+              <!-- Book pill (if attached) -->
+              <% if (post.book) { %>
+                <div class="post-book-pill">
+                  <% if (post.book.coverUrl) { %>
+                    <img src="<%= post.book.coverUrl %>" alt="<%= post.book.title %>" />
+                  <% } else { %>
+                    <span style="width:28px;height:28px;border-radius:4px;background:var(--bg-2);display:flex;align-items:center;justify-content:center;font-size:12px;">📚</span>
+                  <% } %>
+                  <span><%= post.book.title %></span>
+                </div>
+              <% } %>
+
+              <p class="post-content"><%= post.content %></p>
+
+              <div class="post-actions">
+                <!-- Like form -->
+                <form action="/feed/<%= post._id %>/like" method="POST" style="display:inline;">
+                  <button type="submit" class="like-btn <%= post.likes && locals.currentUser && post.likes.map(String).includes(String(locals.currentUser)) ? 'liked' : '' %>">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="<%= post.likes && locals.currentUser && post.likes.map(String).includes(String(locals.currentUser)) ? 'var(--accent)' : 'none' %>" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+                    </svg>
+                    <%= post.likes ? post.likes.length : 0 %>
+                  </button>
+                </form>
+                <span class="text-muted text-sm" style="margin-left: 6px;">
+                  <%= post.likes && post.likes.length === 1 ? '1 like' : (post.likes ? post.likes.length : 0) + ' likes' %>
+                </span>
+              </div>
+
+            </div>
+          <% }); %>
+        </div>
+      <% } else { %>
+        <div class="empty-state">
+          <div class="empty-icon">📭</div>
+          <h3>Your feed is quiet</h3>
+          <p>Add friends or post an update to get things started.</p>
+          <a href="/search" class="btn btn-secondary mt-3" style="display:inline-flex;">Discover books</a>
+        </div>
+      <% } %>
+
+    </div><!-- /left -->
+
+    <!-- ── Right: Sidebar ─────────────────────────────────── -->
+    <aside style="position: sticky; top: 80px;">
+
+      <!-- Quick links -->
+      <div class="card card-pad mb-3">
+        <p class="section-label">Quick links</p>
+        <div style="display:flex; flex-direction:column; gap:8px;">
+          <a href="/search"  class="btn btn-secondary btn-sm" style="justify-content:flex-start; gap:8px;">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            Discover books
+          </a>
+          <a href="/friends" class="btn btn-secondary btn-sm" style="justify-content:flex-start; gap:8px;">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+            Find friends
+          </a>
+          <a href="/profile/<%= locals.sessionUser ? locals.sessionUser.username : '' %>" class="btn btn-secondary btn-sm" style="justify-content:flex-start; gap:8px;">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            My profile
+          </a>
+        </div>
+      </div>
+
+      <!-- Currently reading (from session user) -->
+      <% if (locals.sessionUser && locals.sessionUser.currentlyReading && locals.sessionUser.currentlyReading.length > 0) { %>
+        <div class="card card-pad">
+          <p class="section-label">Currently reading</p>
+          <div style="display:flex; flex-direction:column; gap:10px;">
+            <% locals.sessionUser.currentlyReading.slice(0,3).forEach(function(book) { %>
+              <div style="display:flex; gap:10px; align-items:center;">
+                <% if (book.coverUrl) { %>
+                  <img src="<%= book.coverUrl %>" alt="<%= book.title %>" style="width:36px;height:54px;border-radius:4px;object-fit:cover;" />
+                <% } else { %>
+                  <div style="width:36px;height:54px;border-radius:4px;background:var(--bg-2);display:flex;align-items:center;justify-content:center;font-size:18px;">📚</div>
+                <% } %>
+                <div style="flex:1;min-width:0;">
+                  <div class="book-title" style="-webkit-line-clamp:1;font-size:13px;"><%= book.title %></div>
+                  <div class="book-author"><%= book.author || '' %></div>
+                </div>
+              </div>
+            <% }); %>
+          </div>
+        </div>
+      <% } %>
+
+    </aside><!-- /sidebar -->
+
+  </div>
+</div>
+
+<script>
+  // Auto-resize compose textarea
+  document.querySelectorAll('.compose-input').forEach(function(ta) {
+    ta.addEventListener('input', function() {
+      this.style.height = 'auto';
+      this.style.height = this.scrollHeight + 'px';
+    });
+  });
+</script>
+
+</body>
+</html>
